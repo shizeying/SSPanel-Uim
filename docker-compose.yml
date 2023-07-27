@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  app:
+    image: 'chishin/nginx-proxy-manager-zh'
+    restart: unless-stopped
+    container_name: nginx
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+    environment:
+      # Mysql/Maria connection parameters:
+      DB_MYSQL_HOST: "db"
+      DB_MYSQL_PORT: 33060
+      DB_MYSQL_USER: "root"
+      DB_MYSQL_PASSWORD: "db"
+      DB_MYSQL_NAME: "npm"
+      PUID: 82
+      PGID: 82
+    depends_on:
+      - php-fpm
+    volumes:
+      - ./data:/data
+      -  ./:/usr/src/app
+      - ./letsencrypt:/etc/letsencrypt
+  php-fpm:
+    image: php-fpm
+    container_name: fpm
+    volumes:
+      - ./:/usr/src/app
+    user: "${UID-www-data}:${GID-www-data}"
+networks:
+  sspanel:
+    driver: bridge
+volumes:
+  myapp:
+    external: true
